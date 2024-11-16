@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Markdown Viewer</title>
+</head>
+<body>
+<div id="content"></div>
+<script src="./marked.min.js"></script>
+<script>
+    function getQueryVariable(variable) {
+        let query = window.location.search.substring(1);
+        let vars = query.split("&");
+        for (let i = 0; i < vars.length; i++) {
+            let pair = vars[i].split("=");
+            if (pair[0] == variable) {
+                return pair[1];
+            }
+        }
+        return undefined;
+    }
+
+    window.onload = function () {
+        let filename = getQueryVariable("file")
+        fetch(filename)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('文件加载失败');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById("content").innerHTML = marked.parse(data);
+            })
+            .catch(error => {
+                console.error('请求出错:', error);
+            });
+    };
+</script>
+</body>
+</html>

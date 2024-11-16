@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Swagger UI Server</title>
+</head>
+<body>
+<ul>
+    {{range .}}
+    {{if eq .App "openapi"}}
+    <li>
+        <a title="{{.RelativePath}}" href="/statics/redoc?file={{.RelativePath}}"> {{ .Title }} </a>
+        <a title="{{.RelativePath}}" href="/statics/swagger?file={{.RelativePath}}">测试</a>
+    </li>
+    {{else if eq .App "markdown"}}
+    <li>
+        <a title="{{.RelativePath}}" href="/mdview/{{.RelativePath}}"> {{ .Title }} </a>
+    </li>
+    {{else if eq .App "text"}}
+    <li>
+        <a title="{{.RelativePath}}" href="/statics/text?file={{.RelativePath}}"> {{ .Title }} </a>
+    </li>
+    {{end}}
+    {{- end}}
+</ul>
+</body>
+</html>

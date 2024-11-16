@@ -1,4 +1,4 @@
-# Swagger UI Server
+# API Doc Server
 
 ## Usage
 
@@ -11,7 +11,10 @@ go run main.go
 Or use Docker:
 
 ```shell
-docker run -d -p 80:80 liamylian/swagger-ui-server:latest
+docker run -d --restart always --name apidoc \
+  -p 80:80 \
+  -v ./docs:/root/docs \
+  liamylian/apidoc-server:latest
 ```
 
 2. Visit WebPage`http://localhost`
@@ -22,9 +25,9 @@ docker run -d -p 80:80 liamylian/swagger-ui-server:latest
 # 1. Configure HTTP Port
 export BIND_ADDR=:8000
 # 2. Configure Static Files Directory
-export HTML_ROOT=/root/apis/
+export DOCS_ROOT=/root/docs/
 # 3. Copy your API definition files to /root/apis/
-cp myapi.json /root/apis/
+cp myapi.json /root/docs/
 # 4. Run program
 go run main.go
 # 5. Visit http://localhost:8000
