@@ -1,4 +1,4 @@
-module github.com/gg-tools/apidoc-server
+module github.com/gg-tools/ggdoc
 
 go 1.22
 

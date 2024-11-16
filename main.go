@@ -3,16 +3,18 @@ package main
 import (
 	"embed"
 	"fmt"
-	"github.com/gg-tools/apidoc-server/internal/markdown"
 	"html/template"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
-	"github.com/gg-tools/apidoc-server/internal/openapi"
+	"github.com/gg-tools/ggdoc/internal"
+	"github.com/gg-tools/ggdoc/internal/markdown"
+	"github.com/gg-tools/ggdoc/internal/openapi"
 )
 
 //go:embed statics
@@ -27,9 +29,9 @@ var (
 )
 
 type DocEntry struct {
-	App          string
-	Title        string
-	RelativePath template.URL
+	App   string
+	Title string
+	URI   template.URL
 }
 
 func main() {
@@ -41,52 +43,56 @@ func main() {
 
 	http.Handle("/statics/", http.StripPrefix("/statics/", http.FileServer(statics)))
 	http.Handle("/docs/", http.StripPrefix("/docs/", http.FileServer(http.Dir(docsRoot))))
-	http.HandleFunc("/mdview/", func(w http.ResponseWriter, r *http.Request) {
-		filePath := strings.TrimPrefix(r.URL.Path, "/mdview")
-		if err := t.ExecuteTemplate(w, "mdview.html", filePath); err != nil {
-			_, _ = w.Write([]byte(fmt.Sprintf("rendor failed: %s", err)))
-			return
-		}
-	})
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		var entries []DocEntry
-		err := filepath.Walk(docsRoot, func(path string, info fs.FileInfo, err error) error {
-			switch {
-			case info.IsDir():
-				return nil
-			case strings.HasSuffix(path, "_schema.yaml"):
-				return nil
-			case strings.HasSuffix(path, "_schema.json"):
-				return nil
+	http.Handle("/mdview/", http.StripPrefix("/mdview/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if slices.Contains([]string{"/", "/index.html"}, r.URL.Path) || strings.HasSuffix(r.URL.Path, ".md") {
+			filePath := filepath.Join("/", r.URL.Path)
+			if err := t.ExecuteTemplate(w, "mdview.html", filePath); err != nil {
+				_, _ = w.Write([]byte(fmt.Sprintf("rendor failed: %s", err)))
+				return
 			}
+		} else {
+			http.StripPrefix("docs", http.FileServer(http.Dir(docsRoot))).ServeHTTP(w, r)
+		}
+	})))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		entries, err := internal.DirectoryTree(docsRoot, func(path string, info fs.FileInfo) (*DocEntry, bool) {
+			relPath, _ := filepath.Rel(docsRoot, path)
+			relParts := strings.Split(relPath, string(filepath.Separator))
+			name := relParts[len(relParts)-1]
+			ext := filepath.Ext(name)
 
 			var title, app string
 			switch {
-			case strings.HasSuffix(path, ".json"), strings.HasSuffix(path, ".yaml"):
+			case info.IsDir():
+				return nil, true
+			case strings.HasPrefix(name, "_"):
+				return nil, false
+			case slices.Contains([]string{".yaml", ".yml", ".json"}, ext):
 				app = "openapi"
 				rd := openapi.NewDocumentReader(path)
 				title, _ = rd.GetTitle()
-			case strings.HasSuffix(path, ".md"):
+			case ext == ".md":
 				app = "markdown"
 				rd := markdown.NewDocumentReader(path)
 				title, _ = rd.GetTitle()
-			default:
+			case ext == ".txt":
 				app = "text"
 				title = ""
+			default:
+				return nil, false
 			}
 
-			relativePath := strings.TrimPrefix(path, docsRoot)
-			apiURI := filepath.ToSlash(filepath.Join("/docs/", relativePath))
 			if title == "" {
-				title = relativePath
+				parts := strings.Split(path, string(filepath.Separator))
+				title = parts[len(parts)-1]
 			}
-			entry := DocEntry{
-				App:          app,
-				Title:        title,
-				RelativePath: template.URL(apiURI),
-			}
-			entries = append(entries, entry)
-			return nil
+
+			uri := filepath.ToSlash(filepath.Join("/docs/", relPath))
+			return &DocEntry{
+				App:   app,
+				Title: title,
+				URI:   template.URL(uri),
+			}, true
 		})
 		if err != nil {
 			_, _ = w.Write([]byte(fmt.Sprintf("list entries failed: %s", err)))

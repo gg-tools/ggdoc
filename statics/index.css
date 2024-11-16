@@ -1,0 +1,11 @@
+ul {
+    list-style-type: none;
+}
+
+li {
+    margin-left: 20px;
+}
+
+.folder {
+    font-weight: bold;
+}

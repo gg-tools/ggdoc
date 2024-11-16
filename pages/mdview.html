@@ -8,6 +8,12 @@
 <div id="content"></div>
 <script src="/statics/markd/marked.min.js"></script>
 <script>
+    const renderer = new marked.Renderer();
+    renderer.image = (obj) => {
+        return `<img src="${obj.href}" alt="${obj.text}" style="max-width: 100%; height: auto;" />`;
+    };
+    marked.setOptions({renderer});
+
     window.onload = function () {
         fetch("{{.}}")
             .then(response => {
@@ -17,7 +23,7 @@
                 return response.text();
             })
             .then(data => {
-                document.getElementById("content").innerHTML = marked.parse(data);
+                document.getElementById("content").innerHTML = marked.parse(data)
             })
             .catch(error => {
                 console.error('请求出错:', error);

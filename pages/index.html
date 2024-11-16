@@ -3,25 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Swagger UI Server</title>
+    <link rel="stylesheet" href="/statics/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/statics/index.css">
 </head>
 <body>
+{{define "item"}}
+<li>
+    {{if .IsDir}}
+    <i class="fas fa-folder-open " style="color: #FFD43B;"></i>
+    <span class="folder">{{.Name}}</span>
+    {{else}}
+    {{if eq .Item.App "openapi"}}
+    <i class="fas fa-file-code" style="color: #74C0FC;"></i>
+    <a title="{{.Item.URI}}" href="/statics/redoc?file={{.Item.URI}}">{{.Item.Title}}</a>
+    <span>（<a title="{{.Item.URI}}" href="/statics/swagger?file={{.Item.URI}}">Swagger</a>）</span>
+    {{else if eq .Item.App "markdown"}}
+    <i class="fas fa-file-word" style="color: #74C0FC;"></i>
+    <a title="{{.Item.URI}}" href="/mdview/{{.Item.URI}}"> {{.Item.Title}} </a>
+    {{else if eq .Item.App "text"}}
+    <i class="fas fa-file" style="color: #74C0FC;"></i>
+    <a title="{{.Item.URI}}" href="/statics/text?file={{.Item.URI}}"> {{.Item.Title}} </a>
+    {{end}}
+    {{end}}
+
+    {{if .IsDir}}
+    <ul>
+        {{range .Children}}
+        {{template "item" .}}
+        {{end}}
+    </ul>
+    {{end}}
+</li>
+{{end}}
+
 <ul>
     {{range .}}
-    {{if eq .App "openapi"}}
-    <li>
-        <a title="{{.RelativePath}}" href="/statics/redoc?file={{.RelativePath}}"> {{ .Title }} </a>
-        <a title="{{.RelativePath}}" href="/statics/swagger?file={{.RelativePath}}">测试</a>
-    </li>
-    {{else if eq .App "markdown"}}
-    <li>
-        <a title="{{.RelativePath}}" href="/mdview/{{.RelativePath}}"> {{ .Title }} </a>
-    </li>
-    {{else if eq .App "text"}}
-    <li>
-        <a title="{{.RelativePath}}" href="/statics/text?file={{.RelativePath}}"> {{ .Title }} </a>
-    </li>
+    {{template "item" .}}
     {{end}}
-    {{- end}}
 </ul>
 </body>
 </html>

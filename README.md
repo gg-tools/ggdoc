@@ -1,4 +1,4 @@
-# API Doc Server
+# GG Doc 
 
 ## Usage
 
@@ -14,7 +14,7 @@ Or use Docker:
 docker run -d --restart always --name apidoc \
   -p 80:80 \
   -v ./docs:/root/docs \
-  liamylian/apidoc-server:latest
+  liamylian/ggdoc:latest
 ```
 
 2. Visit WebPage`http://localhost`
