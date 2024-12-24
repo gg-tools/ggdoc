@@ -3,11 +3,28 @@
 <head>
     <meta charset="utf-8"/>
     <title>Markdown Viewer</title>
+    <link rel="stylesheet" href="/statics/markd/index.css">
+    <link rel="stylesheet" href="/statics/markd/highlight.default.min.css">
 </head>
 <body>
 <div id="content"></div>
 <script src="/statics/markd/marked.min.js"></script>
+<script src="/statics/markd/highlight.min.js"></script>
+<script src="/statics/markd/marked-highlight.js"></script>
 <script>
+    const {Marked} = globalThis.marked;
+    const {markedHighlight} = globalThis.markedHighlight;
+    const marked = new Marked(
+        markedHighlight({
+            emptyLangClass: 'hljs',
+            langPrefix: 'hljs language-',
+            highlight(code, lang, info) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, {language}).value;
+            }
+        })
+    );
+
     const renderer = new marked.Renderer();
     renderer.image = (obj) => {
         return `<img src="${obj.href}" alt="${obj.text}" style="max-width: 100%; height: auto;" />`;

@@ -3,10 +3,14 @@
 <head>
     <meta charset="utf-8"/>
     <title>Markdown Viewer</title>
+    <link rel="stylesheet" href="./index.css">
+    <link rel="stylesheet" href="./highlight.default.min.css">
 </head>
 <body>
 <div id="content"></div>
 <script src="./marked.min.js"></script>
+<script src="./highlight.min.js"></script>
+<script src="./marked-highlight.js"></script>
 <script>
     function getQueryVariable(variable) {
         let query = window.location.search.substring(1);
@@ -19,6 +23,19 @@
         }
         return undefined;
     }
+    
+    const { Marked } = globalThis.marked;
+    const { markedHighlight } = globalThis.markedHighlight;
+    const marked = new Marked(
+        markedHighlight({
+            emptyLangClass: 'hljs',
+            langPrefix: 'hljs language-',
+            highlight(code, lang, info) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            }
+        })
+    );
 
     window.onload = function () {
         let filename = getQueryVariable("file")

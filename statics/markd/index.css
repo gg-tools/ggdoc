@@ -1,0 +1,34 @@
+body {
+    font-size: 1em;
+}
+
+table {
+    margin: 10px;
+    border-collapse: collapse;
+    border: 1px solid #333;
+    page-break-before: auto;
+}
+
+table td {
+    border: 1px solid #333;
+    padding: 0 5px;
+}
+
+table th {
+    border: 1px solid #333;
+    background: #CCC;
+    font-weight: bold;
+    padding: 0 5px;
+}
+
+table, tr, th, td {
+    page-break-inside: avoid;
+}
+
+pre {
+    margin: 10px;
+    border: none;
+    background-color: #ccc;
+    border-radius: 4px;
+    padding: 3px
+}
