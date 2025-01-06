@@ -10,7 +10,7 @@
 <div id="content"></div>
 <script src="./marked.min.js"></script>
 <script src="./highlight.min.js"></script>
-<script src="./marked-highlight.js"></script>
+<script src="/statics/markd/plantuml-encoder.min.js"></script>
 <script>
     function getQueryVariable(variable) {
         let query = window.location.search.substring(1);
@@ -23,36 +23,67 @@
         }
         return undefined;
     }
-    
-    const { Marked } = globalThis.marked;
-    const { markedHighlight } = globalThis.markedHighlight;
-    const marked = new Marked(
-        markedHighlight({
-            emptyLangClass: 'hljs',
-            langPrefix: 'hljs language-',
-            highlight(code, lang, info) {
-                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-                return hljs.highlight(code, { language }).value;
-            }
-        })
-    );
+    function unescapeHtml(str) {
+        var element = document.createElement('div')
+        if (str) {
+            element.innerHTML = str
+        }
+        return element.textContent || element.innerText || ''
+    }
+
+    const {Marked} = globalThis.marked
+    const marked = new Marked()
+    const renderer = new marked.Renderer()
+    renderer.link = function (obj) {
+        if (obj.href.startsWith('http')) {
+            return `<a href="${obj.href}" target="_blank" rel="noopener noreferrer">${obj.text}</a>`
+        } else if (obj.href.startsWith('#') || obj.href.startsWith('/')) {
+            return `<a href="${obj.href}" title="${obj.title}">${obj.text}</a>`
+        } else {
+            const curr_file = getQueryVariable("file")
+            const curr_dir = curr_file.substring(0, curr_file.lastIndexOf('/'))
+            const href = "?file=" + curr_dir + "/" + obj.href
+            return `<a href="${href}" title="${obj.title}">${obj.text}</a>`
+        }
+    }
+    renderer.image = (obj) => {
+        let href
+        if (obj.href.startsWith('http') || obj.href.startsWith('/')) {
+            href = obj.href
+        } else {
+            const file = getQueryVariable("file")
+            href = file.substring(0, file.lastIndexOf('/')) + "/" + obj.href
+        }
+        return `<img src="${href}" alt="${obj.text}" style="max-width: 100%; height: auto;" />`
+    }
+    renderer.code = (obj) => {
+        if (obj.lang === 'plantuml') {
+            const encoded = plantumlEncoder.encode(unescapeHtml(obj.text))
+            return `<img src="https://www.plantuml.com/plantuml/png/${encoded}" alt="PlantUML Diagram" style="max-width: 100%; height: auto;" />`
+        } else {
+            const language = hljs.getLanguage(obj.lang) ? obj.lang : 'plaintext'
+            const rendered = hljs.highlight(unescapeHtml(obj.text), {language}).value
+            return `<pre><code class="${language}">${rendered}</code></pre>`
+        }
+    };
+    marked.setOptions({renderer})
 
     window.onload = function () {
         let filename = getQueryVariable("file")
         fetch(filename)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('文件加载失败');
+                    throw new Error('文件加载失败')
                 }
-                return response.text();
+                return response.text()
             })
             .then(data => {
-                document.getElementById("content").innerHTML = marked.parse(data);
+                document.getElementById("content").innerHTML = marked.parse(data)
             })
             .catch(error => {
-                console.error('请求出错:', error);
+                console.error('请求出错:', error)
             });
-    };
+    }
 </script>
 </body>
 </html>

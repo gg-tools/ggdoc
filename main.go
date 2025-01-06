@@ -43,17 +43,6 @@ func main() {
 
 	http.Handle("/statics/", http.StripPrefix("/statics/", http.FileServer(statics)))
 	http.Handle("/docs/", http.StripPrefix("/docs/", http.FileServer(http.Dir(docsRoot))))
-	http.Handle("/mdview/", http.StripPrefix("/mdview/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if slices.Contains([]string{"/", "/index.html"}, r.URL.Path) || strings.HasSuffix(r.URL.Path, ".md") {
-			filePath := filepath.Join("/", r.URL.Path)
-			if err := t.ExecuteTemplate(w, "mdview.html", filePath); err != nil {
-				_, _ = w.Write([]byte(fmt.Sprintf("rendor failed: %s", err)))
-				return
-			}
-		} else {
-			http.StripPrefix("docs", http.FileServer(http.Dir(docsRoot))).ServeHTTP(w, r)
-		}
-	})))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		entries, err := internal.DirectoryTree(docsRoot, func(path string, info fs.FileInfo) (*DocEntry, bool) {
 			relPath, _ := filepath.Rel(docsRoot, path)

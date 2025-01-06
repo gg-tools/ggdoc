@@ -19,7 +19,7 @@
     <span>（<a title="{{.Item.URI}}" href="/statics/swagger?file={{.Item.URI}}">Swagger</a>）</span>
     {{else if eq .Item.App "markdown"}}
     <i class="fas fa-file-word" style="color: #74C0FC;"></i>
-    <a title="{{.Item.URI}}" href="/mdview/{{.Item.URI}}"> {{.Item.Title}} </a>
+    <a title="{{.Item.URI}}" href="/statics/markd?file={{.Item.URI}}"> {{.Item.Title}} </a>
     {{else if eq .Item.App "text"}}
     <i class="fas fa-file" style="color: #74C0FC;"></i>
     <a title="{{.Item.URI}}" href="/statics/text?file={{.Item.URI}}"> {{.Item.Title}} </a>
