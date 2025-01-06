@@ -10,7 +10,7 @@
 <div id="content"></div>
 <script src="./marked.min.js"></script>
 <script src="./highlight.min.js"></script>
-<script src="/statics/markd/plantuml-encoder.min.js"></script>
+<script src="./plantuml-encoder.min.js"></script>
 <script>
     function getQueryVariable(variable) {
         let query = window.location.search.substring(1);
@@ -23,6 +23,7 @@
         }
         return undefined;
     }
+
     function unescapeHtml(str) {
         var element = document.createElement('div')
         if (str) {

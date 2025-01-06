@@ -1,4 +1,14 @@
-# GG Doc 
+# GG Doc
+
+- [x] OpenAPI Specification 3.0
+    - [x] Swagger
+    - [x] RedDoc
+- [x] Markdown
+    - [x] Highlight
+    - [x] PlantUML
+    - [ ] Mermaid
+    - [ ] PDF Print
+- [x] Text
 
 ## Usage
 
